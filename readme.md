@@ -144,6 +144,7 @@ deleteMany():
         console.log(result);
     });
 ```
+![deleteMany](https://github.com/nugoo1/mongo-db/blob/master/deleteMany.PNG)
 
 deleteOne():
 ```
@@ -151,6 +152,7 @@ deleteOne():
         console.log(result);
     });
 ```
+![deleteOne](https://github.com/nugoo1/mongo-db/blob/master/deleteOne.PNG)
 
 findOneAndDelete():
 ```
@@ -160,3 +162,5 @@ findOneAndDelete():
 ```
 
 *This function shows you the document that was deleted. Printing the two functions deleteMany() and deleteOne() using console.log isn't as useful, so you can alternatively leave out the .then() callback.*
+
+![findOneAndDelete](https://github.com/nugoo1/mongo-db/blob/master/findOneAndDelete.PNG)
