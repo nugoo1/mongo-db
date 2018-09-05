@@ -164,3 +164,39 @@ findOneAndDelete():
 *This function shows you the document that was deleted. Printing the two functions deleteMany() and deleteOne() using console.log isn't as useful, so you can alternatively leave out the .then() callback.*
 
 ![findOneAndDelete](https://github.com/nugoo1/mongo-db/blob/master/findOneAndDelete.PNG)
+
+### Updating documents
+
+findOneAndUpdate() passing in $set as the second argument and options as the third argument <a href="http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#findOneAndUpdate">(Documentation Here)</a>:
+```
+    findOneAndUpdate()
+    db.collection('Todos').findOneAndUpdate({
+        _id: new ObjectID('5b8f82bb0f59f61c2c8feab6')
+    }, {
+        $set: {
+            completed: true
+        }
+    }, {
+        returnOriginal: false
+    }).then((result) => {
+        console.log(result);
+    });
+```
+findOneAndUpdate() using $inc to increment/decrement a property value, passing in an object alongside set as the second object:
+
+```
+    db.collection('Users').findOneAndUpdate({
+        name: 'Jen'
+    }, {
+        $set: {
+            name: 'Nuwan'
+        }, $inc: {
+            age: 1
+        }
+    },{
+        returnOriginal: false
+    }).then((result) => {
+        console.log(result);
+    });
+```
+*This increments the age property by 1*
