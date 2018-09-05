@@ -1,0 +1,133 @@
+# MongoDB
+
+## Prerequisites
+
+Install <a href="https://www.mongodb.com/">MongoDB</a>
+
+From your terminal, navigate to the directory where you downloaded and installed MongoDB, and open up the bin folder.
+Here, you have access to the MongoDB database. 
+
+First create a local directory to store your data. I made the folder in my users directory. Once you've done that, go ahead and run the following command:
+
+`mongod.exe --dbpath /Users/Nuwan/mongo-data`
+
+*You should see a message saying something along the lines of 'waiting for connection on port 27017'*
+
+Open up a separate terminal and navigate to the same directory as before.
+You can now run the following command:
+
+`mongo.exe`
+
+*You are now connected to the database. Next, we'll be installing a GUI to see our database.*
+
+
+Install <a href="https://robomongo.org/download">Robomongo GUI</a>
+
+
+You can now use mongodb in your application and use Robomongo to view your data.
+
+```
+db.Todos.insert({
+    name: 'Nuwan',
+    age: 25
+})
+```
+
+You are all set! You can run npm install mongodb and start using it in your application! For more information, visit the <a href="https://github.com/mongodb/node-mongodb-native">MongoDB Native Website.</a>
+
+`npm install mongodb@2.2.5`
+
+## Getting Started
+
+Connecting to the MongoDB database and inserting a collection:
+
+```
+const MongoClient = require('mongodb').MongoClient;
+
+MongoClient.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true }, (err, client) => {
+    if (err) {
+        return console.log('Unable to connect to MongoDB server', err)
+    }
+    console.log('Connected to MongoDB server');
+    const db = client.db('TodoApp');
+
+    db.collection('Todos').insertOne({
+        text: 'Something to do',
+        completed: false
+    }, (err, result) => {
+        if (err) {
+            return console.log('Unable to insert todo', err);
+        }
+        console.log(JSON.stringify(result.ops, undefined, 2));
+    });
+
+    client.close();
+});
+
+```
+
+## Querying your database
+
+MongoDB automatically generated a unique ID for your documents. To extract the timestamp, run _id.getTimestamp() function as follows:
+
+```
+    db.collection('Users').insertOne({
+        name: "Nuwan",
+        age: 25,
+        location: "Colombo"
+    }, (err, results) => {
+        if (err) {
+            return console.log('Unable to insert user', err)
+        };
+        console.log(results.ops[0]._id.getTimestamp());
+    });
+```
+
+Find documents:
+
+```
+    db.collection('Todos').find().toArray().then((docs) => {
+        console.log('Todos');
+        console.log(JSON.stringify(docs, undefined, 2));
+    }, (err) => {
+        console.log('Unable to fetch todos', err)
+    });
+ ```
+
+ *The toArray() function converts the cursor to an array of documents.*
+
+ If you want to query with certain arguments:
+
+ ```
+    db.collection('Todos').find({completed: false}).toArray().then((docs) => {
+        console.log('Todos');
+        console.log(JSON.stringify(docs, undefined, 2));
+    }, (err) => {
+        console.log('Unable to fetch todos', err)
+    });
+```
+
+Notice we have queried the database for only documents with the property *completed: false*.
+
+We can also query by id:
+
+    db.collection('Todos').find({
+        _id: new ObjectID('5b8ed00f55c2db887cbc979f')
+    }).toArray().then((docs) => {
+        console.log('Todos');
+        console.log(JSON.stringify(docs, undefined, 2));
+    }, (err) => {
+        console.log('Unable to fetch todos', err)
+    });
+
+Notice that we cannot simply use the id as a string, we need to specify that it is an ObjectID by *first importing objectID from mongodb* and then using it as above.
+
+Another function provided by mongodb is count(). This returns the number of documents in your query. Here, we count the total number of documents, but if you pass in certain arguments, you can count how many documents match your query.
+
+```
+    db.collection('Todos').find().count().then((count) => {
+        console.log(`Todos count: ${count}`);
+    }, (err) => {
+        console.log('Unable to fetch todos', err)
+    });
+```
