@@ -6,9 +6,9 @@
 
 ### Installing MongoDB
 
-Install <a href="https://www.mongodb.com/">MongoDB</a>
+Install <a href="https://www.mongodb.com/">MongoDB</a> from this URL.
 
-From your terminal, navigate to the directory where you downloaded and installed MongoDB, and open up the bin folder.
+Once you have MongoDB installed, from your terminal, navigate to the directory where you downloaded and installed MongoDB, and open up the bin folder.
 Here, you have access to the MongoDB database. 
 
 First create a local directory to store your data. I made the folder in my users directory. Once you've done that, go ahead and run the following command:
@@ -135,3 +135,28 @@ Another function provided by mongodb is count(). This returns the number of docu
 ```
 
 Follow the same principle when using other functions provided by MongoDB. You can find the <a href="http://mongodb.github.io/node-mongodb-native/3.1/api">documentation here.</a>
+
+### Deleting documents
+
+deleteMany():
+```
+    db.collection('Todos').deleteMany({text: 'Eat Lunch'}).then((result) => {
+        console.log(result);
+    });
+```
+
+deleteOne():
+```
+    db.collection('Todos').deleteOne({text: 'Eat lunch'}).then((result) => {
+        console.log(result);
+    });
+```
+
+findOneAndDelete():
+```
+    db.collection('Todos').findOneAndDelete({completed: false}).then((result) => {
+        console.log(result);
+    });
+```
+
+*This function shows you the document that was deleted. Printing the two functions deleteMany() and deleteOne() using console.log isn't as useful, so you can alternatively leave out the .then() callback.*
