@@ -353,6 +353,10 @@ app.listen(3000, () => {
 
 See testing examples <a href="https://github.com/nugoo1/testing-with-node">here.</a>
 
+For more information on supertests, you can find the <a href="https://github.com/visionmedia/supertest/">docs here.</a>
+
+To download all test dependencies as dev-dependencies, run the following command in the terminal:
+
 `npm i expect@1.20.2 mocha@3.0.2 nodemon@1.10.2 supertest@2.0.0 --save-dev`
 
 The following code runs two tests:
