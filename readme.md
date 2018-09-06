@@ -6,10 +6,12 @@
 
 ### Installing MongoDB
 
-Install <a href="https://www.mongodb.com/">MongoDB</a> from this URL.
+<a href="https://www.mongodb.com/">Click here to install MongoDB.</a> 
 
 Once you have MongoDB installed, from your terminal, navigate to the directory where you downloaded and installed MongoDB, and open up the bin folder.
 Here, you have access to the MongoDB database. 
+
+### Connecting to the database
 
 First create a local directory to store your data. I made the folder in my users directory. Once you've done that, go ahead and run the following command:
 
@@ -184,6 +186,8 @@ findOneAndUpdate() passing in $set as the second argument and options as the thi
 ```
 findOneAndUpdate() using $inc to increment/decrement a property value, passing in an object alongside set as the second object:
 
+*The following increments the age property by 1*
+
 ```
     db.collection('Users').findOneAndUpdate({
         name: 'Jen'
@@ -199,4 +203,148 @@ findOneAndUpdate() using $inc to increment/decrement a property value, passing i
         console.log(result);
     });
 ```
-*This increments the age property by 1*
+
+# Mongoose
+
+<a href="![Mongoose](https://cdn-images-1.medium.com/max/1600/1*rchG6FrxrvUsgxnfgoq8ow.png)">![Mongoose](https://cdn-images-1.medium.com/max/1600/1*rchG6FrxrvUsgxnfgoq8ow.png)</a>
+
+`npm i mongoose@4.5.9 --save`
+
+### Connecting to database
+
+With mongoose, you don't have to make a callback. Mongoose makes sure that it first connects to the database before running any of the code below it, so the code looks much simpler!
+
+```
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost:27017/TodoApp');
+```
+
+### Adding Promises to Mongoose
+
+By default, mongoose uses callbacks, but we're going to be using promises - which is great for scaling.
+To tell mongoose to use the default promises library instead of a 3rd party library, we use the following command.
+(promises weren't built into javascript until recently, 3rd party libraries like bluebird were the go to).
+
+```
+mongoose.Promise = global.Promise;
+```
+
+### Using Models
+
+Specifying the properties of the model:
+
+```
+var Todo = mongoose.model('Todo', {
+    text: {
+        type: String
+    },
+    completed: {
+        type: Boolean
+    },
+    completedAt: {
+        type: Number
+    }
+```
+
+Adding a new document to the model:
+
+```
+var newTodo = new Todo({
+    text: 'Cook dinner'
+});
+
+newTodo.save().then((doc) => {
+    console.log('Saved todo', doc);
+}, (e) => {
+    console.log('Unable to save todo')
+});
+```
+![addingDocument](https://github.com/nugoo1/mongo-db/blob/master/addingDocument.PNG)
+
+```
+var secondTodo = new Todo({
+    text: 'Eat dinner',
+    completed: false,
+    completedAt: 19
+});
+
+secondTodo.save().then((doc) => {
+    console.log('Saved todo', JSON.stringify(doc, undefined, 2));
+}, (e) => {
+    console.log('Unable to save todo', e);
+});
+```
+![addingDocument](https://github.com/nugoo1/mongo-db/blob/master/addingDocument2.PNG)
+
+### Mongoose Validation
+
+<a href="https://mongoosejs.com/docs/validation.html">Mongoose Validations Docs.</a>
+
+```
+var User = mongoose.model('User',{
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1
+    }
+});
+
+var newUser = new User({
+    email: ' nuwan@gmail.com '
+});
+
+newUser.save().then((doc) => {
+    console.log('New user added', JSON.stringify(doc, undefined, 2));
+}, (e) => {
+    console.log('Unable to add new user', e);
+});
+
+```
+![adding new user](https://github.com/nugoo1/mongo-db/blob/master/newUser.PNG)
+
+*Typecasting exists in Mongoose, so it'll turn your inputted numbers and booleans into strings.*
+
+## Installing Postman
+Postman lets you create HTTP requests and fire them off. It makes sure everything you're writing is working, letting you play around with your data and see how everything works as you move through your API.
+
+Download postman from <a>https://www.getpostman.com/.</a> 
+*If you have any problems starting it up, try setting New Environment Variables as explained <a href="https://www.getpostman.com/docs/v6/postman/launching_postman/installation_and_updates">here.</a>*
+
+
+### Creating an API Endpoint
+
+We use the same functionality from the above sections to save the data, that is received from a post method, in our database. 
+
+```
+var express = require('express');
+var bodyParser = require('body-parser');
+
+var { mongoose } = require('./db/mongoose');
+var { Todo } = require('./models/todo');
+var { User } = require('./models/user');
+
+var app = express();
+
+app.use(bodyParser.json());
+
+app.post('/todos', (req, res) => {
+    var todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc) => {
+        res.send(doc);
+    }, (e) => {
+        res.status(400).send(e);
+    });
+});
+
+
+app.listen(3000, () => {
+    console.log('Started on port 3000');
+});
+```
+
+
