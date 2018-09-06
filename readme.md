@@ -315,7 +315,9 @@ Download postman from <a>https://www.getpostman.com/.</a>
 
 ### Creating an API Endpoint
 
-We use the same functionality from the above sections to save the data, that is received from a post method, in our database. 
+We use the same functionality to save data received from a post method in our database.
+
+We use some express middleware to parse the data into a json object.
 
 ```
 var express = require('express');
@@ -347,4 +349,67 @@ app.listen(3000, () => {
 });
 ```
 
+## Testing Your Application
+
+See testing examples <a href="https://github.com/nugoo1/testing-with-node">here.</a>
+
+`npm i expect@1.20.2 mocha@3.0.2 nodemon@1.10.2 supertest@2.0.0 --save-dev`
+
+The following code runs two tests:
+1. Making sure that when we post new data, it is saved in the database.
+2. Making sure that if we pass invalid data, it is not saved in the database. (This relies on assertions previously created to test data validation).
+
+```
+const expect = require('expect');
+const request = require('supertest');
+
+const {app} = require('./../server');
+const {Todo} = require('./../models/todo');
+
+beforeEach((done) => {
+    Todo.remove({}).then(() => done());
+});
+
+describe('POST /todos', () => {
+    it('should create a new todo', (done) => {
+        var text = 'Test todo text';
+        
+        request(app)
+            .post('/todos')
+            .send({text})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.text).toBe(text);
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                Todo.find().then((todos) => {
+                    expect(todos.length).toBe(1);
+                    expect(todos[0].text).toBe(text);
+                    done();
+                }).catch((e) => done(e));
+            });
+    });
+
+    it('should not create todo with invalid body data', (done) => {
+        
+        request(app)
+            .post('/todos')
+            .send({})
+            .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                Todo.find().then((todos) => {
+                    expect(todos.length).toBe(0);
+                    done();
+                }).catch((e) => done(e));
+            });
+    });
+});
+```
 
