@@ -416,4 +416,60 @@ describe('POST /todos', () => {
     });
 });
 ```
+### Mongoose Queries
 
+<a href="https://mongoosejs.com/docs/queries.html">Mongoose Query Documentation Here.</a>
+
+![findOne](https://github.com/nugoo1/mongo-db/blob/master/mongooseFind.PNG)
+
+
+With Mongoose you don't need to pass in ObjectIDs. It does that for you.
+
+```
+var id = '5b925f13f76cbc742ee106cf';
+
+Todo.find({
+    _id: id
+}).then((todos) => {
+    console.log('Todos', todos);
+});
+```
+
+If you want to only find one document, the following code *returns an Object instead of an Array.*
+If there are no documents found from the query, it will return null, which is useful.
+
+```
+Todo.findOne({
+    _id: id
+}).then((todo) => {
+    console.log('Todos', todo);
+});
+```
+The following code lets you find the document by ID, without having to specify an object.
+
+```
+Todo.findById(id).then((todo) => {
+    console.log('TodoById', todo)
+});
+```
+
+Using null to do something.
+```
+Todo.findById(id).then((todo) => {
+    if (!todo) {
+        return console.log('Id not found');
+    }
+    console.log('TodoById', todo)
+});
+```
+We use mongodbs ObjectID function to validate ID's:
+
+```
+const {ObjectID} = require('mongodb');
+
+const id = 1231u89fhjre92d322;
+
+if (!ObjectID.isValid(id)) {
+    console.log('ID not valid.');
+}
+```

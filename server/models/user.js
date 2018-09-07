@@ -9,6 +9,7 @@ var User = mongoose.model('User',{
     }
 });
 
+
 // var newUser = new User({
 //     email: ' nuwan@gmail.com '
 // });
@@ -19,5 +20,5 @@ var User = mongoose.model('User',{
 //     console.log('Unable to add new user', e);
 // });
 
-// module.exports = {User};
+module.exports = {User};
 
