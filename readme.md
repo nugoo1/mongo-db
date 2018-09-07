@@ -146,7 +146,7 @@ deleteMany():
         console.log(result);
     });
 ```
-![deleteMany](https://github.com/nugoo1/mongo-db/blob/master/deleteMany.PNG)
+![deleteMany](https://github.com/nugoo1/mongo-db/blob/master/images/deleteMany.PNG)
 
 deleteOne():
 ```
@@ -154,7 +154,7 @@ deleteOne():
         console.log(result);
     });
 ```
-![deleteOne](https://github.com/nugoo1/mongo-db/blob/master/deleteOne.PNG)
+![deleteOne](https://github.com/nugoo1/mongo-db/blob/master/images/deleteOne.PNG)
 
 findOneAndDelete():
 ```
@@ -165,7 +165,7 @@ findOneAndDelete():
 
 *This function shows you the document that was deleted. Printing the two functions deleteMany() and deleteOne() using console.log isn't as useful, so you can alternatively leave out the .then() callback.*
 
-![findOneAndDelete](https://github.com/nugoo1/mongo-db/blob/master/findOneAndDelete.PNG)
+![findOneAndDelete](https://github.com/nugoo1/mongo-db/blob/master/images/findOneAndDelete.PNG)
 
 ### Updating documents
 
@@ -260,7 +260,7 @@ newTodo.save().then((doc) => {
     console.log('Unable to save todo')
 });
 ```
-![addingDocument](https://github.com/nugoo1/mongo-db/blob/master/addingDocument.PNG)
+![addingDocument](https://github.com/nugoo1/mongo-db/blob/master/images/addingDocument.PNG)
 
 ```
 var secondTodo = new Todo({
@@ -275,7 +275,7 @@ secondTodo.save().then((doc) => {
     console.log('Unable to save todo', e);
 });
 ```
-![addingDocument](https://github.com/nugoo1/mongo-db/blob/master/addingDocument2.PNG)
+![addingDocument](https://github.com/nugoo1/mongo-db/blob/master/images/addingDocument2.PNG)
 
 ### Mongoose Validation
 
@@ -302,7 +302,7 @@ newUser.save().then((doc) => {
 });
 
 ```
-![adding new user](https://github.com/nugoo1/mongo-db/blob/master/newUser.PNG)
+![adding new user](https://github.com/nugoo1/mongo-db/blob/master/images/newUser.PNG)
 
 *Typecasting exists in Mongoose, so it'll turn your inputted numbers and booleans into strings.*
 
@@ -420,7 +420,7 @@ describe('POST /todos', () => {
 
 <a href="https://mongoosejs.com/docs/queries.html">Mongoose Query Documentation Here.</a>
 
-![findOne](https://github.com/nugoo1/mongo-db/blob/master/mongooseFind.PNG)
+![findOne](https://github.com/nugoo1/mongo-db/blob/master/images/mongooseFind.PNG)
 
 
 With Mongoose you don't need to pass in ObjectIDs. It does that for you.
@@ -473,3 +473,17 @@ if (!ObjectID.isValid(id)) {
     console.log('ID not valid.');
 }
 ```
+The following is a practical example:
+
+```
+User.findById('5b8fadd7760b7970cdf783aa').then((user) => {
+    if (!user) {
+     return console.log('No user found.')
+    }
+    console.log('User:', JSON.stringify(user, undefined, 2));
+},(e) => {
+    console.log(e);
+});
+```
+
+![Returns user object](https://github.com/nugoo1/mongo-db/blob/master/images/mongooseExample.PNG)
