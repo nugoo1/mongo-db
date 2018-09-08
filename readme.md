@@ -539,3 +539,36 @@ const todos = [{
     });
 });
 ```
+
+### Deploying to Heroku
+
+Add this to your server file.
+
+`const port = process.env.PORT || 3000;`
+
+Add a start script to your package.json file.
+
+`"start": "node server/server.js"`
+
+In your package.json file, specify which version of node you want Heroku to use.
+
+```
+  "engines": {
+    "node": "8.11.3"
+}
+```
+Next, create a new heroku app using:
+`heroku create`
+
+Next, add on mongolab:
+`heroku addons:create mongolab:sandbox`
+
+Run the following code to get your mongodb URI:
+`heroku config`
+
+Add this to your mongoose connect file:
+
+```
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
+```
+
