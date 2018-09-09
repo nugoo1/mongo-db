@@ -539,8 +539,26 @@ const todos = [{
     });
 });
 ```
+### Deleting documents from our database with Mongoose
+Mongoose gives us 3 ways to remove a document.
 
-### Deploying to Heroku
+```
+Todo.remove({}).then((result) => {
+    console.log(result)
+});
+
+Todo.findOneAndRemove({_id:'5b94a4db53d6359260fc7088'}).then((todo) => {
+    console.log(todo)
+});
+
+Todo.findByIdAndRemove('5b94a4db53d6359260fc7088').then((todo) => {
+    console.log(todo);
+});
+
+```
+
+
+## Deploying to Heroku
 
 Add this to your server file.
 
