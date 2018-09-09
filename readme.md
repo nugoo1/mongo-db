@@ -557,7 +557,6 @@ Todo.findByIdAndRemove('5b94a4db53d6359260fc7088').then((todo) => {
 
 ```
 
-
 ## Deploying to Heroku
 
 Add this to your server file.
@@ -590,3 +589,26 @@ Add this to your mongoose connect file:
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
 ```
 
+### Setting up a Test Database
+Update this line of code in your test script in your package.json file:
+
+`"test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha server/**/*.test.js",`
+
+Add this to your server file:
+```var env = process.env.NODE_ENV;
+
+if (env === 'development') {
+    process.env.PORT = 3000;
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
+} else if (env === 'test') {
+    process.env.PORT = 3000;
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
+}
+```
+
+What this does is when you're testing with mocha, you will be manipulating data from the TodoAppTest database and in your normal database for development.
+On Heroku, it will be connected to mongolab on your mongoose.js file:
+
+`mongoose.connect(process.env.MONGODB_URI);`
+
+*Heroku sets "NODE_ENV=production" by default.*
