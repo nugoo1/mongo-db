@@ -612,3 +612,272 @@ On Heroku, it will be connected to mongolab on your mongoose.js file:
 `mongoose.connect(process.env.MONGODB_URI);`
 
 *Heroku sets "NODE_ENV=production" by default.*
+
+### Custom Validation with Mongoose
+
+You can use a custom validator with Mongoose. The schema is outline below.
+
+```
+var schema = new Schema({
+  name: {
+    type: String,
+    required: true
+  }
+});
+var Cat = db.model('Cat', schema);
+
+// This cat has no name :(
+var cat = new Cat();
+cat.save(function(error) {
+  assert.equal(error.errors['name'].message,
+    'Path `name` is required.');
+
+  error = cat.validateSync();
+  assert.equal(error.errors['name'].message,
+    'Path `name` is required.');
+});
+```
+
+We will be using the <a href="https://www.npmjs.com/package/validator">validor</a> npm package to validate our emails.
+
+`npm install validator@5.6.0 --save`
+
+```
+const mongoose = require('mongoose');
+const validator = require('validator');
+
+var User = mongoose.model('User',{
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1,
+        unique: true,
+        validate: {
+            validator: validator.isEmail,
+            message: '{VALUE} is not a valid email.'
+        }
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6
+    },
+    tokens: [{
+        access: {
+            type: String,
+            required: true
+        },
+        token: {
+            type: String,
+            required: true
+        }
+    }]
+});
+```
+We can then use the following code to create an API endpoint to create a new user.
+
+```
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+
+    user.save().then((doc) => {
+        res.send(doc);
+    }).catch((e) => res.status(400).send(e));
+});
+```
+
+## JWT & Hashing
+We will be using crypto-js to play around with how hashing and JWT works. After that, we'll actually be using jsonwebtoken to get this done. But, to get a good understanding of how JWT works, let's play around with crypto-js.
+
+`npm install crypto-js@3.16 --save`
+
+```
+const {SHA256} = require('crypto-js');
+
+var message = 'I am user number 3';
+
+var hash = SHA256(message).toString();
+
+console.log('Message:', message);
+console.log('Hash:', hash);
+```
+
+![crypto-js](https://github.com/nugoo1/mongo-db/blob/master/images/hashing.PNG)
+
+The following code adds a hash value along with the id, which we can compare with other hashes later to see if any data was changed.
+This still isn't fullproof but it's a good start. We will be adding 'salting' to make if fullproof later on.
+
+```
+var data = {
+    id: 4
+};
+var token = {
+    data,
+    hash: SHA256(JSON.stringify(data)).toString()
+};
+
+```
+Salting adds a secret value that is only stored on the server. It is used to encrypt and decrypt the data, which ensures the user cannot manipulate the data or use hashing to get the exact value as they won't have access to the 'salt'.
+
+```
+var data = {
+    id: 4
+};
+var token = {
+    data,
+    hash: SHA256(JSON.stringify(data) + 'somesecret').toString()
+};
+
+var resultHash = SHA256(JSON.stringify(token.data) + 'somesecret').toString();
+
+if (resultHash === token.hash) {
+    console.log('Data was not changed');
+} else {
+    console.log('Data was changed. Do not trust.');
+}
+```
+
+```
+var data = {
+    id: 4
+};
+var token = {
+    data,
+    hash: SHA256(JSON.stringify(data) + 'somesecret').toString()
+};
+
+token.data.id = 5;
+token.hash = SHA256(JSON.stringify(token.data)).toString();
+
+
+var resultHash = SHA256(JSON.stringify(token.data) + 'somesecret').toString();
+if (resultHash === token.hash) {
+    console.log('Data was not changed');
+} else {
+    console.log('Data was changed. Do not trust.');
+}
+```
+
+![crypto-js](https://github.com/nugoo1/mongo-db/blob/master/images/hashing2.PNG)
+
+### JWT
+To encode data, we use jwt.sing, passing in the data we want to verify along with the salt.
+
+```
+const jwt = require('jsonwebtoken');
+
+var data = {
+    id: 10
+};
+
+var token = jwt.sign(data, '123abc');
+```
+
+![jsonwebtoken](https://github.com/nugoo1/mongo-db/blob/master/images/jwt.PNG)
+
+
+To decode it, we use jwt.verify, passing in the data we want to verify along with the salt.
+```
+var data = {
+    id: 10
+};
+
+var token = jwt.sign(data, '123abc');
+console.log('token', token);
+
+var decoded = jwt.verify(token, '123abc')
+console.log('decoded', decoded)
+
+```
+![jsonwebtoken](https://github.com/nugoo1/mongo-db/blob/master/images/jwt2.PNG)
+
+If anything goes wrong, you will get an 'invalid signature' error.
+
+#### Adding JWT to the User Model
+
+Instead of passing in the user model directly into mongoose, we're going to use mongoose schema to enable us to add custom instance or model methods.
+
+```
+var UserSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1,
+        unique: true,
+        validate: {
+            validator: validator.isEmail,
+            message: '{VALUE} is not a valid email.'
+        }
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6
+    },
+    tokens: [{
+        access: {
+            type: String,
+            required: true
+        },
+        token: {
+            type: String,
+            required: true
+        }
+    }]
+});
+
+var User = mongoose.model('User', UserSchema);
+```
+Creating a jwt auth token is as easy as entering the code snippet below. We use a standard javascript function as opposed to an arrow function so that we can bind the 'this' keyword to the user object.
+
+```
+const jwt = require('jsonwebtoken');
+
+UserSchema.methods.generateAuthToken = function () {
+    var user = this;
+    var access = 'auth';
+    var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+
+    user.tokens = user.tokens.concat([{access, token}]);
+
+    return user.save().then(() => {
+        return token;
+    });
+};
+```
+*Notice that we used return twice. This lets us use .then() in the file we call the function from to return the token.*
+
+We can then update our POST /users request.
+
+```
+// Post /users
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user)
+    }).catch((e) => res.status(400).send(e));
+});
+```
+
+Next, we're gonna define another method which prevents the password and tokens array being sent back to the user.
+
+```
+const _ = require('lodash');
+
+UserSchema.methods.toJSON = function () {
+    var user = this;
+    var userObject = user.toObject();
+
+    return _.pick(userObject, ['_id', 'email']);
+};
+
+```
+
+Now we are done! The API knows how to sign up users and send back an authentication token as an http header.
