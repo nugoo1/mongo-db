@@ -881,3 +881,64 @@ UserSchema.methods.toJSON = function () {
 ```
 
 Now we are done! The API knows how to sign up users and send back an authentication token as an http header.
+
+### Private Routes
+Find by Token - we create a new model method (as opposed to an instance method) to verify a user. To decode, we have to use the same salt we used to encode the object, here the salt is simply 'abc123'.
+```
+UserSchema.statics.findByToken = function (token) {
+    var User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123')
+    } catch (e) {
+        return Promise.reject();
+    }
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+```
+In the server.js file, we take the x-auth token from the req.header and pass it into the model method. The model methods verifies the token using the salt. If the token is verified, but couldn't find a user associated with that token, we run the if (!user) method to send back a status of 401, as we did with an invalid token.
+```
+app.get('/users/me', (req, res) => {
+    var token = req.header('x-auth');
+
+    User.findByToken(token).then((user) => {
+        if (!user) {
+            return Promise.reject();
+        }
+
+        res.send(user);
+    }).catch((e) => {
+        res.status(401).send();
+    });
+});
+```
+
+We can break this out into its own function, and its own file. We still have the exact same functionality, but we have a reusable function that we can use over and over again.
+
+```
+var authenticate = (req, res, next) => {
+    var token = req.header('x-auth');
+
+    User.findByToken(token).then((user) => {
+        if (!user) {
+            return Promise.reject();
+        }
+
+        req.user = user;
+        req.token = token;
+        next();
+    }).catch((e) => {
+        res.status(401).send();
+    });
+};  
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
+});
+```
