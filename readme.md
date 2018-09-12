@@ -942,3 +942,40 @@ app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
 });
 ```
+
+### Hashing Passwords
+We use bcryptjs to hash our password. The first argument (number of rounds) slows down the hashing algorithm, making it harder for brute force attacks. The higher the number, slower the algorithm. The salt is built-in, and there's no need for storing the value.
+
+```
+const bcrypt = require('bcryptjs');
+
+var password = '123abc!';
+
+bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+        console.log(hash);
+    });
+});
+```
+
+We use Mongoose Middleware to add a function when a model updates. In this case, we will be adding a function when a new user model gets created or updated, but more specifically, when the password property updates. Otherwise, we will be rehashing hashed passwords everytime someone updates their name or email address, which is not what we want.
+
+<a href="https://mongoosejs.com/docs/middleware.html">Mongoose Middleware Docs here.</a>
+
+```
+UserSchema.pre('save', function (next) {
+    var user = this;
+
+    if (user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                user.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
+```
+
